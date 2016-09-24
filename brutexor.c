@@ -6,15 +6,8 @@
 #include <openssl/md5.h>
 #include <openssl/hmac.h>
 
-#define TAM_KEY 61
+#define TAM_KEY 62
 #define TAM_ENTRY 256
-
-void append(char* s, char c)
-{
-        int len = strlen(s);
-        s[len] = c;
-        s[len+1] = '\0';
-}
 
 unsigned char* generateHexDigits(unsigned char *cadeia, unsigned char *hex[], int tam){
     int i=0, lenght1, lenght2;
@@ -24,10 +17,6 @@ unsigned char* generateHexDigits(unsigned char *cadeia, unsigned char *hex[], in
     
     memset(hex, 0, tam);
 
-    if(strlen(cadeia) != (tam*2)){
-        printf("Cadeia de caracteres está incompleta.\n");
-        exit(1);
-    }
     if(strlen(cadeia) % 2 == 0){
         while(*cadeia !='\0'){
             memset(aux, 0, 3);
@@ -40,15 +29,19 @@ unsigned char* generateHexDigits(unsigned char *cadeia, unsigned char *hex[], in
             i += 1;
         }
     }
+    if(i != tam){
+        printf("Cadeia de caracteres esta incompleta ou numero de duplas invalido.\n");
+        exit(1);
+    }
     
 }
 
-void hexTochar(unsigned char *cadeiaHex[], char cadeiaChar[]){
+void hexTochar(unsigned char *cadeiaHex[], char cadeiaChar[], unsigned int lenDica){
     int i = 0;
     int myChar;
     const char *hex;
 
-    while (i < 20) {
+    while (i < lenDica) {
         if(isxdigit(*cadeiaHex[i])){
             hex = cadeiaHex[i];
             myChar = (int)strtol(hex, NULL, 0);
@@ -121,12 +114,14 @@ void keyGenerator(unsigned char *md5[], unsigned int len, char chave[]){
 
 }
 
-void xorCipher(char cadeia[], char chave[]){
+void xorCipher(char cadeia[], char chave[], unsigned int lenDica){
     int i, j = 0;
     int digit;
-    unsigned char buffer[20];
+    unsigned char buffer[lenDica];
     
-    for(i=0; i < 20; i++) {
+    printf("Dica: ");
+    
+    for(i=0; i < lenDica; i++) {
         if(j >= strlen(chave)){
             j = 0;
         }
@@ -143,38 +138,41 @@ void xorCipher(char cadeia[], char chave[]){
 }
 
 void main(int argc, char *argv[]) {;
-    unsigned char *cadeiaHex[20] = {0};
-    unsigned char *cadeiaMd5[20] = {0};
+    unsigned char *cadeiaHex[TAM_ENTRY] = {0};
+    unsigned char *cadeiaMd5[TAM_ENTRY] = {0};
     unsigned char *digitHex = malloc(TAM_ENTRY);
     unsigned char *digitMd5 = malloc(TAM_ENTRY);
-    char cadeiaChar[20] = {0};
+    char cadeiaChar[TAM_ENTRY] = {0};
     char cadeiaFinal[] ={0};
     char chave[2];
-    int tamCHex = 20;
-    unsigned int len;
+    unsigned int lenDica, lenKey;
     int i;
     
-    if(argc < 4){
+    if(argc < 5){
         printf("Entrada incorreta.\n\n");
-        fflush(stdout);
-        printf("Siga o modelo: ./<nome do programa> <digitos hexadecimais sem espaço> <hash md5> <tamanho da chave>\n");
-        fflush(stdout);
+        printf("Este programa possui 4 paramentros:\n");
+        printf("->Digitos em Hexadecimal sem espaço\n");
+        printf("->Quantidade de duplas do Hexadecimal\n");
+        printf("->Hash em MD5\n");
+        printf("->Tamanho da chave que será testada\n");
+        printf("Siga o modelo: ./<nome do programa> <digitos hexadecimais sem espaço> <quantidade de duplas do hexadecimal> <hash md5> <tamanho da chave>\n");
         exit(0);
     }
     
     strcpy(digitHex, argv[1]);
-    strcpy(digitMd5, argv[2]);
-    len = atoi(argv[3]);
+    lenDica = atoi(argv[2]);
+    strcpy(digitMd5, argv[3]);
+    lenKey = atoi(argv[4]);
     
     memset(chave, 0, 2);
     
-    generateHexDigits(digitHex, cadeiaHex, 20);
+    generateHexDigits(digitHex, cadeiaHex, lenDica);
     generateHexDigits(digitMd5, cadeiaMd5, 16);
 
-    hexTochar(cadeiaHex, cadeiaChar);
-    keyGenerator(cadeiaMd5, len, chave);
+    hexTochar(cadeiaHex, cadeiaChar, lenDica);
+    keyGenerator(cadeiaMd5, lenKey, chave);
     
     printf("chave: %s \n", chave);
     
-    xorCipher(cadeiaChar, chave);
+    xorCipher(cadeiaChar, chave, lenDica);
 }
