@@ -2,14 +2,45 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <math.h>
 #include <openssl/md5.h>
 #include <openssl/hmac.h>
+
+#define TAM_KEY 61
+#define TAM_ENTRY 256
 
 void append(char* s, char c)
 {
         int len = strlen(s);
         s[len] = c;
         s[len+1] = '\0';
+}
+
+unsigned char* generateHexDigits(unsigned char *cadeia, unsigned char *hex[], int tam){
+    int i=0, lenght1, lenght2;
+    char aux[3];
+    char digit[4];
+    unsigned char *buffer = "0x";
+    
+    memset(hex, 0, tam);
+
+    if(strlen(cadeia) != (tam*2)){
+        printf("Cadeia de caracteres está incompleta.\n");
+        exit(1);
+    }
+    if(strlen(cadeia) % 2 == 0){
+        while(*cadeia !='\0'){
+            memset(aux, 0, 3);
+            memset(digit, 0, 4);
+            strncpy(aux, cadeia, 2);
+            strcat(digit, buffer);
+            strcat(digit, aux);
+            hex[i] = strdup(digit);
+            cadeia += 2;
+            i += 1;
+        }
+    }
+    
 }
 
 void hexTochar(unsigned char *cadeiaHex[], char cadeiaChar[]){
@@ -22,7 +53,6 @@ void hexTochar(unsigned char *cadeiaHex[], char cadeiaChar[]){
             hex = cadeiaHex[i];
             myChar = (int)strtol(hex, NULL, 0);
             cadeiaChar[i] = myChar;
-           // printf("char: %c\n", cadeiaChar[i]);
             i+=1;
         }else{
          exit(0);
@@ -31,96 +61,120 @@ void hexTochar(unsigned char *cadeiaHex[], char cadeiaChar[]){
     }
 }
 
-
-char* iterate(char *str, const char *base[], int idx, int len, int *getKey) {
-    unsigned char *md5Key[MD5_DIGEST_LENGTH] = {"0x8d","0x7b","0x35","0x6e","0xae","0x43","0xad","0xcd","0x6a","0xd3","0xee","0x12","0x4c","0x3d","0xcf","0x1e"};
+int iterate(char *str, const char *base[], int idx, int len, unsigned char *md5Key[], int *found, char *chave) {
     unsigned char result[MD5_DIGEST_LENGTH];
     const char *hex;
     char c;
     int i, j, myChar, contB=1;
     
     if (idx < (len - 1)) {
-        for (i = 0; i < 61; ++i) {
+        for (i = 0; i < TAM_KEY; ++i) {
             str[idx] = *base[i];
-
-            iterate(str, base, idx + 1, len, getKey);
+            if(*found == 0){
+                iterate(str, base, idx + 1, len, md5Key, found, chave);
+            }else{
+                return 1;
+            }
         }
     } else {
-        for (i = 0; i < 61; ++i) {
+        for (i = 0; i < TAM_KEY; ++i) {
             str[idx] = *base[i];
+            
             MD5(str, strlen(str), result);
             
             for(j = 0; j < MD5_DIGEST_LENGTH; j++){
+                
                 if(isxdigit(*md5Key[j])){
                     hex = md5Key[j];
                     myChar = (int)strtol(hex, NULL, 0);
                     if(result[j] == myChar){
                         contB += 1;
                         if(contB == MD5_DIGEST_LENGTH){
-                            *getKey = 1;
-                            return str;
+                            *found = 1;
+                            strcpy(chave, str);
+                            break;
                         }
                     }else{
                         break;
                     }
                 }
-           }
+            }
         }
     }
+    return 0;
 }
 
-void keyGenerator(){
-    const char *keysU[61] = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","x","w","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","X","W","Y","Z","1","2","3","4","5","6","7","8","9"};
-    //const char teste[] = "FACIL";
-    int i, getKey = 0;
-    const char *keysC;
+void keyGenerator(unsigned char *md5[], unsigned int len, char chave[]){
+    const char *keysU[TAM_KEY] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","X","W","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","x","w","y","z", "0","1","2","3","4","5","6","7","8","9"};
+    int i, found = 0, search = 0;
 
-    char *chave;
     char concat[8];
     
-    for(i = 0; i < 8; i++){
-        memset(concat, 0, 8);
-        chave = iterate(concat, keysU, 0, i, &getKey);
-        if(getKey){
-            break;
-        }
+    memset(concat, 0, 8);
+
+    found = iterate(concat, keysU, 0, len, md5, &search, chave);
+    
+    if(!found){
+        printf("Chave Não encontrada.\n");
+        exit(1);
     }
 
-    printf("%s\n", chave);
-    // for (j = 0; j < 61; j++){
-    //     MD5(keysU[j], strlen(keysU[j]), result);
-     
-    //     for(i = 0; i < MD5_DIGEST_LENGTH; i++){
-    //         if(isxdigit(*md5Key[i])){
-    //             hex = md5Key[i];
-    //             myChar = (int)strtol(hex, NULL, 0);
-    //             if(result[i] == myChar){
-    //                 //printf("oi\n");
-    //             }else{
-    //               //  printf("naodeu\n");
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
 }
 
-int main(int argc, char *argv[]) {
-    unsigned char *cadeiaHex[20] = {"0x0b", "0x34", "0x30", "0x20", "0x2f", "0x27", "0x05", "0x22", "0x05", "0x29", "0x21", "0x28", "0x22", "0x26", "0x19", "0x34", "0x23", "0x22", "0x27", "0x2d"};
+void xorCipher(char cadeia[], char chave[]){
+    int i, j = 0;
+    int digit;
+    unsigned char buffer[20];
+    
+    for(i=0; i < 20; i++) {
+        if(j >= strlen(chave)){
+            j = 0;
+        }
+        
+        digit = cadeia[i] ^ chave[j];
+        if(digit < 32){
+            digit += 32;
+        }
+        buffer[i] = digit;
+        printf("%c", buffer[i]);
+        j++;
+    }
+    printf("\n");
+}
+
+void main(int argc, char *argv[]) {;
+    unsigned char *cadeiaHex[20] = {0};
+    unsigned char *cadeiaMd5[20] = {0};
+    unsigned char *digitHex = malloc(TAM_ENTRY);
+    unsigned char *digitMd5 = malloc(TAM_ENTRY);
     char cadeiaChar[20] = {0};
     char cadeiaFinal[] ={0};
+    char chave[2];
     int tamCHex = 20;
+    unsigned int len;
     int i;
     
-    hexTochar(cadeiaHex, cadeiaChar);
-    keyGenerator();
+    if(argc < 4){
+        printf("Entrada incorreta.\n\n");
+        fflush(stdout);
+        printf("Siga o modelo: ./<nome do programa> <digitos hexadecimais sem espaço> <hash md5> <tamanho da chave>\n");
+        fflush(stdout);
+        exit(0);
+    }
     
+    strcpy(digitHex, argv[1]);
+    strcpy(digitMd5, argv[2]);
+    len = atoi(argv[3]);
     
-    // // write
-    // for (i = 0 ; i < 20; i++){
-    //     //sprintf(cadeiaFinal, "%c", cadeiaChar[i]);
-    //     append(cadeiaFinal, cadeiaChar[i]);
-    // }
-    // printf("%s, \n", cadeiaFinal);
+    memset(chave, 0, 2);
+    
+    generateHexDigits(digitHex, cadeiaHex, 20);
+    generateHexDigits(digitMd5, cadeiaMd5, 16);
 
+    hexTochar(cadeiaHex, cadeiaChar);
+    keyGenerator(cadeiaMd5, len, chave);
+    
+    printf("chave: %s \n", chave);
+    
+    xorCipher(cadeiaChar, chave);
 }
