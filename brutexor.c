@@ -172,7 +172,7 @@ void main(int argc, char *argv[]) {;
     hexTochar(cadeiaHex, cadeiaChar, lenDica);
     keyGenerator(cadeiaMd5, lenKey, chave);
     
-    printf("chave: %s \n", chave);
+    printf("Chave: %s \n", chave);
     
     xorCipher(cadeiaChar, chave, lenDica);
 }
