@@ -1,3 +1,11 @@
+//-------------------------------------------------------------------//
+// UNIVERSIDADE FEDERAL DO PARANÁ                                    //
+// KATHERYNE LOUISE GRAF     GRR:20120706   IDENTIFICADOR: KLG12     //
+// CI301 - INTRODUÇÃO À SEGURANÇA COMPUTACIONAL                      //
+//-------------------------------------------------------------------//
+// BIBLIOTECAS
+//-------------------------------------------------------------------//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,15 +16,36 @@
 #include <errno.h>
 #include <ctype.h>
 
+//-------------------------------------------------------------------//
+// DEFINES
+//-------------------------------------------------------------------//
+
 #define TAM_NAMEF 256
 #define TAM_HASH 30000
+
+//-------------------------------------------------------------------//
+// ESTRUTURA DA HASH DO DICIONARIO
+//-------------------------------------------------------------------//
 
 struct dictionary{
     char *word;
     struct dictionary *next;
 };
 
+//-------------------------------------------------------------------//
+// VARIAVEL ESTÁTICA
+//-------------------------------------------------------------------//
+
 static struct dictionary *hash[TAM_HASH];
+
+//-------------------------------------------------------------------//
+// FUNÇÕES
+//-------------------------------------------------------------------//
+// Esta função calcula o valor o valor hash da palavra passada como
+// parametro
+// 
+// Parametros
+// word: palavra que está sendo adicionada ou procurada no dicionario
 
 unsigned value(char *word){
     unsigned hashVal;
@@ -26,6 +55,14 @@ unsigned value(char *word){
     }
     return (hashVal % TAM_HASH);
 }
+//-------------------------------------------------------------------//
+// Esta função procura se uma dada palavra, passada como parametro
+// esta inserida ou não dentro do dicionario. Se a palavra já estiver
+// no dicionario, retorna 1, senão retorna 0
+//
+// Parametros:
+// word: palavra que será verificada se já esta contida ou não no 
+//       dicionario
 
 int search(char *word){
     struct dictionary *temp;
@@ -37,6 +74,13 @@ int search(char *word){
     }
     return 0;
 }
+//-------------------------------------------------------------------//
+// Esta função adiciona a palavra passada como paramentro dentro do 
+// dicionario, e retorna esste dicionario para que ele fique atualizado
+// e seja marcado como existente.
+//
+// Parametros: 
+// word: palavra a ser adicionada ao dicionario
 
 struct dictionary *add(char *word){
     struct dictionary *temp;
@@ -51,6 +95,14 @@ struct dictionary *add(char *word){
 
     return temp;
 }
+//-------------------------------------------------------------------//
+// Esta função faz a checagem e retirada de caracteres especiais 
+// ([,]["][?][!], etc) das palavras.
+//
+// Parametros:
+// word: palavra de entrada para ser feita checagem e retirada de 
+//       caracteres especiais, se houver
+// wordS: palavra de saida, se caracteres especiais
 
 void particionate(char *word,  char *wordS){
     int i, c = 0;
@@ -63,6 +115,14 @@ void particionate(char *word,  char *wordS){
     }
     wordS[c] = '\0';
 }
+//-------------------------------------------------------------------//
+// Função Main
+// Dado um path como argumento, checa se o diretorio pode ser acessado,
+// se puder, cria um arquivo de saida e tenta acessar todos os arquivos
+// .txt, para em cada um deles pegar todas as palavras e tentar 
+// adicionar a um dicionario, sem repetir. Se a palavra não for repetida
+// já escreve no arquivo de saida, que é um arquivo com todas as 
+// palavras contidas no .txt daquele diretorio passado.
 
 void main(int argc, char *argv[]){
     DIR *dir;
@@ -124,3 +184,4 @@ void main(int argc, char *argv[]){
     }    
     fclose(output);
 }
+//-------------------------------------------------------------------//
