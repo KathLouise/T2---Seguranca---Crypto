@@ -108,7 +108,7 @@ void particionate(char *word,  char *wordS){
     int i, c = 0;
     
     for(i = 0; i < strlen(word); i++){
-        if(!((word[i] >=32) && (word[i] <= 38) || (word[i] >= 40) && (word[i] <= 64) || (word[i] >= 91) && (word[i] <= 95) || (word[i] >= 123) && (word[i] <= 126))){ 
+        if(!((word[i] >=32) && (word[i] <= 44) || (word[i] >= 45) && (word[i] <= 64) || (word[i] >= 91) && (word[i] <= 95) || (word[i] >= 123) && (word[i] <= 126))){ 
             wordS[c] = word[i];
             c++;
         }
