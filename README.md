@@ -6,4 +6,15 @@
   2. Brutexor: Um programa que, dada um dica cifrada com xor e convertida um hexadecimal, o tamanho de duplas desse hexadecimal, uma hash em md5 da senha que cifrou essa dica e um tamanho de senha; ele encontra a senha e descriptografa a dica, ambos por força bruta.
   3. A terceira parte requer o uso do programa John the Ripper, na qual passa-se o dicionario gerado para que ele quebre a criptografia do arquivo dado pelo professor.
   
-**Compilação**
+**Compilação e Execução**
+
+Os dois programa foram adicionados ao Makefile, então basta dar `make` para gerar os executaveis:
+> $ make
+
+Para executar basta:
+- Wordlist
+> $ ./wordlist [path do diretório]
+
+- Brutexor
+
+> $ ./brutexor [hexadecimal cifrado em xor da dica] [numero de duplas do hexadcimal] [hash md5 da chave] [tamanho de chave]
